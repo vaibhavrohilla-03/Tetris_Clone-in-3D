@@ -36,6 +36,12 @@ private:
 	UFUNCTION()
 		void SpawnTetroid();
 
+	UFUNCTION()
+		void MoveTetroid(class ATetroidActor* Tetroid);
+
+	UFUNCTION()
+		void HandleTetroid();
+
 	FVector RandBound;
 
 	FVector GetSpawnPoint();
@@ -49,5 +55,10 @@ private:
 	bool isOnGround = false;
 
 	FHitResult Hit;
-		
+
+	TArray<FVector> TraceStart;
+
+	TArray<FVector> TraceEnd;
+
+	FCollisionQueryParams CollisionQuery;
 };

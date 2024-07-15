@@ -3,6 +3,9 @@
 
 #include "TetroidActor.h"
 
+constexpr auto Constant_50 = 70.0f;
+constexpr auto Constant_100 = 120.0f;
+
 // Sets default values
 ATetroidActor::ATetroidActor()
 {
@@ -53,7 +56,7 @@ void ATetroidActor::MakeShape(int16 number)
 		for (UStaticMeshComponent* cubes : Cubes)
 		{
 			cubes->AddLocalOffset(offset, true);
-			offset.Z += 50.0f;
+			offset.Z += Constant_50;
 		}
 		UE_LOG(LogTemp, Display, TEXT("case 0 called"));
 	}
@@ -62,9 +65,9 @@ void ATetroidActor::MakeShape(int16 number)
 	case 1:// box Shape
 	{
 		Cubes[0]->AddLocalOffset(FVector(0, 0, 0));
-		Cubes[1]->AddLocalOffset(FVector(50.0f, 0, 0));
-		Cubes[2]->AddLocalOffset(FVector(50.0f, 0, 50.0f));
-		Cubes[3]->AddLocalOffset(FVector(0, 0, 50.0f));
+		Cubes[1]->AddLocalOffset(FVector(Constant_50, 0, 0));
+		Cubes[2]->AddLocalOffset(FVector(Constant_50, 0, Constant_50));
+		Cubes[3]->AddLocalOffset(FVector(0, 0, Constant_50));
 
 		UE_LOG(LogTemp, Display, TEXT("case 1 called"));
 	}
@@ -79,12 +82,12 @@ void ATetroidActor::MakeShape(int16 number)
 		{
 			if (i == 3)
 			{
-				cubes->AddLocalOffset(FVector(100.0f, 0, 50.0f));
+				cubes->AddLocalOffset(FVector(Constant_100, 0, Constant_50));
 			}
 			else
 			{
 				cubes->AddLocalOffset(offset);
-				offset.X += 50.0f;
+				offset.X += Constant_50;
 			}
 			i++;
 		}
@@ -95,9 +98,9 @@ void ATetroidActor::MakeShape(int16 number)
 	{
 
 		Cubes[0]->AddLocalOffset(FVector(0, 0, 0));
-		Cubes[1]->AddLocalOffset(FVector(0, 0, -50.0f));
-		Cubes[2]->AddLocalOffset(FVector(-50.0f, 0, -50.0f));
-		Cubes[3]->AddLocalOffset(FVector(-50.0f, 0, -100.0f));
+		Cubes[1]->AddLocalOffset(FVector(0, 0, -Constant_50));
+		Cubes[2]->AddLocalOffset(FVector(-Constant_50, 0, -Constant_50));
+		Cubes[3]->AddLocalOffset(FVector(-Constant_50, 0, -Constant_100));
 
 		UE_LOG(LogTemp, Display, TEXT("case 3 called"));
 	}
@@ -112,12 +115,12 @@ void ATetroidActor::MakeShape(int16 number)
 		{
 			if (i == 3)
 			{
-				cubes->AddLocalOffset(FVector(50.0f, 0, 50.0f));
+				cubes->AddLocalOffset(FVector(Constant_50, 0, Constant_50));
 			}
 			else
 			{
 				cubes->AddLocalOffset(offset);
-				offset.X += 50.0f;
+				offset.X += Constant_50;
 			}
 			i++;
 		}

@@ -16,20 +16,34 @@ ATetroidSpawner::ATetroidSpawner()
 	SpawnVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnVolume"));
 
 	SpawnVolume->AttachToComponent(RootComponent,FAttachmentTransformRules::SnapToTargetIncludingScale);
+
+	TraceStart.SetNum(4);
+	TraceEnd.SetNum(4);
 }
 
 // Called when the game starts or when spawned
 void ATetroidSpawner::BeginPlay()
-{
+{ 
 	Super::BeginPlay();
 	
-	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::SpawnTetroid, 1.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::HandleTetroid, 0.5f, true);
 }
 
 // Called every frame
 void ATetroidSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	for (int16 i = 0; i < 4; i++)
+	{	if( (TraceStart.IsValidIndex(i) && TraceEnd.IsValidIndex(i)) && 
+			(TraceStart[i] != FVector::ZeroVector && TraceEnd[i] != FVector::ZeroVector)  )
+		{
+
+		DrawDebugLine(GetWorld(), TraceStart[i], TraceEnd[i], FColor::Red);
+		
+		}
+		
+	}
 
 }
 
@@ -46,61 +60,87 @@ FVector ATetroidSpawner::GetSpawnPoint()
 
 
 void ATetroidSpawner::SpawnTetroid()
-
-{
-	float timer_rate = GetWorld()->GetTimerManager().GetTimerRate(SpawnTimerHandle);
-
-	FString DMessage = FString::Printf(TEXT("Timer Rate %f"), timer_rate);
-
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, DMessage, true);
-
-	if (!isFalling)
-	{
+{		
 		if (!ensure(MytetroidActor != NULL)) return;
 
 		FRotator TetroidRotation;
 		TetroidRotation.Roll = 0.0f;
-		TetroidRotation.Pitch = FMath::RandRange(0, 4) * 90.0f;
+		TetroidRotation.Pitch = 0.0f;       // for random rotation ---> FMath::RandRange(0, 4) * 90.0f;
 		TetroidRotation.Yaw = 0.0f;
 
 		tetroid = GetWorld()->SpawnActor<ATetroidActor>(MytetroidActor, GetSpawnPoint(), TetroidRotation);
 
-		isFalling =  true;
-		isOnGround = false;
-	}
-	else
-	{
-		TArray<UStaticMeshComponent*> CubeChildren;
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("spawned"));
 
-		tetroid->GetComponents <UStaticMeshComponent>(CubeChildren);
-
-		for (UStaticMeshComponent* cubes : CubeChildren)
-		{
-
-			FVector TraceStart = tetroid->GetActorLocation();
-
-			FVector TraceEnd = tetroid->GetActorLocation() + (tetroid->GetActorUpVector() * 1000.0f);
-
-			GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd,ECollisionChannel::ECC_WorldStatic);
+		return;
+			/*for (int16 j = 0; j < 4; j++)
+			{
+				FString Debugmessage = FString::Printf(TEXT("trace start  => %s"), *TraceStart[j].ToString());
+				FString Debugmessageone = FString::Printf(TEXT("trace End  => %s"), *TraceEnd[j].ToString());
+				FString Debugmessagetwo = FString::Printf(TEXT("hit result %s"), Hit.bBlockingHit ? TEXT("true") : TEXT("false"));
+				//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, Debugmessage);
+				//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, Debugmessageone);
+				//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, Debugmessagetwo);
+			}
 			
-			DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 5, 1, 3.0f);
-			
-
-		}
-		if (isFalling && !isOnGround)
-		{
-			tetroid->AddActorLocalOffset(FVector(0.0f, 0.0f, -50.0f));
 
 			if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
 			{
 				isFalling = false;
 				isOnGround = true;
+				GEngine->AddOnScreenDebugM*/
+}
 
-			}
+void ATetroidSpawner::MoveTetroid(ATetroidActor* Tetroid)
+{
+	if (Tetroid == nullptr) return;
+
+
+	TArray<UStaticMeshComponent*> CubeChildren;
+
+	Tetroid->GetComponents <UStaticMeshComponent>(CubeChildren);
+	int16 i = 0;
+	for (UStaticMeshComponent* cubes : CubeChildren)
+	{
+
+		TraceStart[i] = cubes->GetComponentLocation();
+
+		TraceEnd[i] = cubes->GetComponentLocation() + FVector(0.0f, 0.0f, 50.0f);
+
+		FString DebugMessage = FString::Printf(TEXT("TraceStart ->  %s"), *TraceStart[i].ToString());
+		FString DebugMessage_two = FString::Printf(TEXT("TraceEnd ->  %s"), *TraceEnd[i].ToString());
+		GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Red, DebugMessage);
+		GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Red, DebugMessage_two);
+
+		CollisionQuery.AddIgnoredActor(Tetroid);
+
+		GetWorld()->LineTraceSingleByChannel(Hit, TraceStart[i], TraceEnd[i], ECollisionChannel::ECC_WorldStatic, CollisionQuery,FCollisionResponseParams());
+
+		i++;
+	}
+
+	Tetroid->AddActorLocalOffset(FVector(0.0f, 0.0f, -50.0f));
+}
+
+void ATetroidSpawner::HandleTetroid()
+{
+	if (!isFalling)
+	{
+		SpawnTetroid();
+
+		isFalling = true;
+		isOnGround = false;
+		return;
+	}
+	else if (ensure(tetroid != nullptr))
+	{
+		MoveTetroid(tetroid);
+
+		if (Hit.bBlockingHit)
+		{
+			AActor* hitactor = Hit.GetActor();	
+			isFalling = false;
+			isOnGround = true;
 		}
 	}
 }
-
-
-
