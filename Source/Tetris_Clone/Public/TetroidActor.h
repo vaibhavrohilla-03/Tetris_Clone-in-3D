@@ -18,9 +18,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	USceneComponent* GetRootComponent();
-
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,5 +34,14 @@ private:
 	void SelectRandomColor();
 
 	int32 ShapeNumber;
+
+	int16 MakeGoodRandom();
 	
+	int16 MyRandomNumber = 0;
+	int16 PreviousRandomNumber;
+	
+	UPROPERTY(EditAnywhere, Category = "CubeMat");
+		UMaterialInterface* CubeMaterial;
+
+	UMaterialInstanceDynamic* DynCubeMaterial;
 };

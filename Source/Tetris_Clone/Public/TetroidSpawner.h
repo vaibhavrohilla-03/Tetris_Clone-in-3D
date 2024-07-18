@@ -30,9 +30,15 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Class_To_Spawn")
 		TSubclassOf<class ATetroidActor> MytetroidActor;
 
+	UPROPERTY(EditAnywhere, Category = "TraceLineOffset")
+		FVector StartOffset;
+
+	UPROPERTY(EditAnywhere, Category = "TraceLineOffset")
+		FVector EndOffset;
+
+	UPROPERTY(EditAnywhere, Category = "MoveOffset")
+		float MoveOffset = -50.0f;
 	
-
-
 	UFUNCTION()
 		void SpawnTetroid();
 
@@ -48,17 +54,21 @@ private:
 
 	class ATetroidActor* tetroid;
 
+	
+
 	FTimerHandle SpawnTimerHandle;
 
 	bool isFalling = false;
 
 	bool isOnGround = false;
 
-	FHitResult Hit;
+	TArray<FHitResult> Hit;
 
 	TArray<FVector> TraceStart;
 
 	TArray<FVector> TraceEnd;
+
+	
 
 	FCollisionQueryParams CollisionQuery;
 };

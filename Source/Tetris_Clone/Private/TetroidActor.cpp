@@ -3,8 +3,8 @@
 
 #include "TetroidActor.h"
 
-constexpr auto Constant_50 = 70.0f;
-constexpr auto Constant_100 = 120.0f;
+constexpr auto Constant_50 = 50.0f;
+constexpr auto Constant_100 = 100.0f;
 
 // Sets default values
 ATetroidActor::ATetroidActor()
@@ -24,15 +24,20 @@ ATetroidActor::ATetroidActor()
 		Cubes[i]->SetupAttachment(RootComponent);
 	}
 
+	ShapeNumber = MakeGoodRandom();
 }
 
 // Called when the game starts or when spawned
 void ATetroidActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	ShapeNumber = FMath::RandRange(0, 4);
+
 	MakeShape(ShapeNumber);
+	SelectRandomColor();
+	for (TObjectPtr<UStaticMeshComponent>& cubes : Cubes)
+	{
+		cubes->SetMaterial(0, DynCubeMaterial);
+	}
 }
 
 // Called every frame
@@ -129,16 +134,39 @@ void ATetroidActor::MakeShape(int16 number)
 	break;
 
 	default:
+		for (UStaticMeshComponent* cubes : Cubes)
+		{
+			cubes->AddLocalOffset(FVector::ZeroVector);
+
+		}
+		UE_LOG(LogTemp, Display, TEXT("case 0 called"));
 		break;
 	}
 }
 
 void ATetroidActor::SelectRandomColor()
 {
+	if (CubeMaterial != nullptr)
+	{
 
+	DynCubeMaterial = UMaterialInstanceDynamic::Create(CubeMaterial,this);
+
+	DynCubeMaterial->SetVectorParameterValue(TEXT("GlowColor"), FColor::MakeRandomColor());
+
+	}
 }
+ 
+int16 ATetroidActor::MakeGoodRandom()
+{ 
+	PreviousRandomNumber = MyRandomNumber;
 
-USceneComponent* ATetroidActor::GetRootComponent()
-{
-	return RootComponent;
+	MyRandomNumber = FMath::RandRange(0, 4);
+
+	if (PreviousRandomNumber == MyRandomNumber)
+	{
+		MyRandomNumber += FMath::RandRange(1, 2);
+	}
+	
+	return MyRandomNumber;
+	 
 }

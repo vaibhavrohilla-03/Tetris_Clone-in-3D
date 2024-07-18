@@ -19,6 +19,7 @@ ATetroidSpawner::ATetroidSpawner()
 
 	TraceStart.SetNum(4);
 	TraceEnd.SetNum(4);
+	Hit.SetNum(4);
 }
 
 // Called when the game starts or when spawned
@@ -94,8 +95,6 @@ void ATetroidSpawner::SpawnTetroid()
 void ATetroidSpawner::MoveTetroid(ATetroidActor* Tetroid)
 {
 	if (Tetroid == nullptr) return;
-
-
 	TArray<UStaticMeshComponent*> CubeChildren;
 
 	Tetroid->GetComponents <UStaticMeshComponent>(CubeChildren);
@@ -103,9 +102,9 @@ void ATetroidSpawner::MoveTetroid(ATetroidActor* Tetroid)
 	for (UStaticMeshComponent* cubes : CubeChildren)
 	{
 
-		TraceStart[i] = cubes->GetComponentLocation();
+		TraceStart[i] = cubes->GetComponentLocation() + StartOffset;
 
-		TraceEnd[i] = cubes->GetComponentLocation() + FVector(0.0f, 0.0f, 50.0f);
+		TraceEnd[i] = cubes->GetComponentLocation() + EndOffset;
 
 		FString DebugMessage = FString::Printf(TEXT("TraceStart ->  %s"), *TraceStart[i].ToString());
 		FString DebugMessage_two = FString::Printf(TEXT("TraceEnd ->  %s"), *TraceEnd[i].ToString());
@@ -114,12 +113,12 @@ void ATetroidSpawner::MoveTetroid(ATetroidActor* Tetroid)
 
 		CollisionQuery.AddIgnoredActor(Tetroid);
 
-		GetWorld()->LineTraceSingleByChannel(Hit, TraceStart[i], TraceEnd[i], ECollisionChannel::ECC_WorldStatic, CollisionQuery,FCollisionResponseParams());
+		GetWorld()->LineTraceSingleByObjectType(Hit[i], TraceStart[i], TraceEnd[i], ECollisionChannel::ECC_WorldStatic, CollisionQuery);
 
 		i++;
 	}
 
-	Tetroid->AddActorLocalOffset(FVector(0.0f, 0.0f, -50.0f));
+	Tetroid->AddActorLocalOffset(FVector(0.0f, 0.0f, MoveOffset));
 }
 
 void ATetroidSpawner::HandleTetroid()
@@ -135,12 +134,30 @@ void ATetroidSpawner::HandleTetroid()
 	else if (ensure(tetroid != nullptr))
 	{
 		MoveTetroid(tetroid);
-
-		if (Hit.bBlockingHit)
+		for (FHitResult& hits : Hit)
 		{
-			AActor* hitactor = Hit.GetActor();	
-			isFalling = false;
-			isOnGround = true;
+
+
+			if (hits.bBlockingHit)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Blocked"));
+				isFalling = false;
+				isOnGround = true;
+			}
 		}
+		if (isOnGround)
+		{
+			TArray<UStaticMeshComponent*> Cubes;
+			tetroid->GetComponents<UStaticMeshComponent>(Cubes);
+			
+				/*for (UStaticMeshComponent* cubes : Cubes)
+				{	
+
+				}*/
+
+			
+		}
+
 	}
+
 }
