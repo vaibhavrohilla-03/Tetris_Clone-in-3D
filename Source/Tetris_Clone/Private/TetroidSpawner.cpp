@@ -3,6 +3,7 @@
 #include "TetroidSpawner.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BPStaticTetroidActor.h"
 #include "TetroidActor.h"
 
 // Sets default values
@@ -20,6 +21,7 @@ ATetroidSpawner::ATetroidSpawner()
 	TraceStart.SetNum(4);
 	TraceEnd.SetNum(4);
 	Hit.SetNum(4);
+	
 }
 
 // Called when the game starts or when spawned
@@ -48,32 +50,36 @@ void ATetroidSpawner::Tick(float DeltaTime)
 
 }
 
-
-FVector ATetroidSpawner::GetSpawnPoint()
-{	
-	const FVector SpawnOrigin = SpawnVolume->Bounds.Origin;
-	const FVector SpawnExtent = SpawnVolume->Bounds.BoxExtent;
-	
-	RandBound = UKismetMathLibrary::RandomPointInBoundingBox(SpawnOrigin, SpawnExtent);
-
-	return RandBound;
+FVector ATetroidSpawner::GetSnappedVector(FVector TVector)
+{
+	return UKismetMathLibrary::Vector_SnappedToGrid(TVector, GridSize);
 }
 
+void ATetroidSpawner::MoveTetroidToGrid(ATetroidActor* Tetroid, FVector MoveTo)
+{	
+
+	Tetroid->AddActorLocalOffset(GetSnappedVector(MoveTo));
+}
+
+FVector ATetroidSpawner::GetSpawnPoint()
+{
+	const FVector SpawnOrigin = SpawnVolume->Bounds.Origin;
+	const FVector SpawnExtent = SpawnVolume->Bounds.BoxExtent;
+
+	FVector RandBound = UKismetMathLibrary::RandomPointInBoundingBox(SpawnOrigin, SpawnExtent);
+
+	return GetSnappedVector(RandBound);
+}
 
 void ATetroidSpawner::SpawnTetroid()
 {		
 		if (!ensure(MytetroidActor != NULL)) return;
 
-		FRotator TetroidRotation;
-		TetroidRotation.Roll = 0.0f;
-		TetroidRotation.Pitch = 0.0f;       // for random rotation ---> FMath::RandRange(0, 4) * 90.0f;
-		TetroidRotation.Yaw = 0.0f;
-
-		tetroid = GetWorld()->SpawnActor<ATetroidActor>(MytetroidActor, GetSpawnPoint(), TetroidRotation);
+		tetroid = GetWorld()->SpawnActor<ATetroidActor>(MytetroidActor, GetSpawnPoint(), FRotator::ZeroRotator);
 
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("spawned"));
 
-		return;
+		
 			/*for (int16 j = 0; j < 4; j++)
 			{
 				FString Debugmessage = FString::Printf(TEXT("trace start  => %s"), *TraceStart[j].ToString());
@@ -89,7 +95,8 @@ void ATetroidSpawner::SpawnTetroid()
 			{
 				isFalling = false;
 				isOnGround = true;
-				GEngine->AddOnScreenDebugM*/
+				GEngine->AddOnScreenDebugM*/ 
+		return;
 }
 
 void ATetroidSpawner::MoveTetroid(ATetroidActor* Tetroid)
@@ -113,13 +120,14 @@ void ATetroidSpawner::MoveTetroid(ATetroidActor* Tetroid)
 
 		CollisionQuery.AddIgnoredActor(Tetroid);
 
-		GetWorld()->LineTraceSingleByObjectType(Hit[i], TraceStart[i], TraceEnd[i], ECollisionChannel::ECC_WorldStatic, CollisionQuery);
+		GetWorld()->LineTraceSingleByChannel(Hit[i], TraceStart[i], TraceEnd[i], ECollisionChannel::ECC_WorldStatic, CollisionQuery);
 
 		i++;
 	}
-
-	Tetroid->AddActorLocalOffset(FVector(0.0f, 0.0f, MoveOffset));
+	
+	MoveTetroidToGrid(Tetroid, FVector(0.0f,0.0f,MoveOffset));
 }
+
 
 void ATetroidSpawner::HandleTetroid()
 {
@@ -150,10 +158,13 @@ void ATetroidSpawner::HandleTetroid()
 			TArray<UStaticMeshComponent*> Cubes;
 			tetroid->GetComponents<UStaticMeshComponent>(Cubes);
 			
-				/*for (UStaticMeshComponent* cubes : Cubes)
+				for (UStaticMeshComponent* cubes : Cubes)
 				{	
-
-				}*/
+					FVector Location = cubes->GetComponentLocation();
+					ABPStaticTetroidActor* StaticTetroid =  GetWorld()->SpawnActor<ABPStaticTetroidActor>(MyStaticTetroidActor, Location, FRotator::ZeroRotator);
+					StaticTetroid->GetComponentByClass<UStaticMeshComponent>()->SetMaterial(0, tetroid->GetDynMaterial());
+				}
+				GetWorld()->DestroyActor(tetroid);
 
 			
 		}

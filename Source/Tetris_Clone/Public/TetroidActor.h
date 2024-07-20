@@ -15,6 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	ATetroidActor();
 
+	UMaterialInstanceDynamic* GetDynMaterial();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

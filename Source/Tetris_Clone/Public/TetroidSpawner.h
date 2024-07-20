@@ -30,6 +30,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Class_To_Spawn")
 		TSubclassOf<class ATetroidActor> MytetroidActor;
 
+		UPROPERTY(EditAnywhere, Category = "Class_To_Spawn")
+		TSubclassOf<class ABPStaticTetroidActor> MyStaticTetroidActor;
+
+
 	UPROPERTY(EditAnywhere, Category = "TraceLineOffset")
 		FVector StartOffset;
 
@@ -38,6 +42,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "MoveOffset")
 		float MoveOffset = -50.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Gridsize")
+		float GridSize = 50.0f;
 	
 	UFUNCTION()
 		void SpawnTetroid();
@@ -46,15 +53,20 @@ private:
 		void MoveTetroid(class ATetroidActor* Tetroid);
 
 	UFUNCTION()
-		void HandleTetroid();
-
-	FVector RandBound;
-
 	FVector GetSpawnPoint();
 
-	class ATetroidActor* tetroid;
+	UFUNCTION()
+		void HandleTetroid();
 
-	
+	UFUNCTION()
+	FVector GetSnappedVector(FVector TVector);
+
+	UFUNCTION()
+	void MoveTetroidToGrid(ATetroidActor* tetroid, FVector MoveTo);
+
+	FVector SpawnLocation;
+
+	class ATetroidActor* tetroid;
 
 	FTimerHandle SpawnTimerHandle;
 

@@ -170,3 +170,8 @@ int16 ATetroidActor::MakeGoodRandom()
 	return MyRandomNumber;
 	 
 }
+
+UMaterialInstanceDynamic* ATetroidActor::GetDynMaterial()
+{
+	return DynCubeMaterial;
+}
