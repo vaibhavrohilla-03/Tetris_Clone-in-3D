@@ -10,8 +10,8 @@ UCLASS()
 class TETRIS_CLONE_API ATetroidSpawner : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ATetroidSpawner();
 
@@ -22,61 +22,62 @@ public:
 	void MoveTetroidToGrid(FVector MoveTo);
 
 	UFUNCTION()
-		void RotateTetroid();
+	void RotateTetroid();
 
 	UFUNCTION()
-		void CheckAndMove(FVector MoveTo);
+	void CheckAndMove(FVector MoveTo);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private:	
-	
+private:
+
 	UPROPERTY(EditAnywhere, Category = "Spawner")
-		TObjectPtr<class UBoxComponent> SpawnVolume;
+	TObjectPtr<class UBoxComponent> SpawnVolume;
 
 	UPROPERTY(EditAnywhere, Category = "Class_To_Spawn")
-		TSubclassOf<class ATetroidActor> MytetroidActor;
+	TSubclassOf<class ATetroidActor> MytetroidActor;
 
-		UPROPERTY(EditAnywhere, Category = "Class_To_Spawn")
-		TSubclassOf<class ABPStaticTetroidActor> MyStaticTetroidActor;
+	UPROPERTY(EditAnywhere, Category = "Class_To_Spawn")
+	TSubclassOf<class ABPStaticTetroidActor> MyStaticTetroidActor;
 
-
-	UPROPERTY(EditAnywhere, Category = "TraceLineOffset")
-		FVector StartOffset;
 
 	UPROPERTY(EditAnywhere, Category = "TraceLineOffset")
-		FVector EndOffset;
+	FVector StartOffset;
+
+	UPROPERTY(EditAnywhere, Category = "TraceLineOffset")
+	FVector EndOffset;
 
 	UPROPERTY(EditAnywhere, Category = "MoveOffset")
-		float MoveOffset = -50.0f;
+	float MoveOffset = -50.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Gridsize")
-		float GridSize = 50.0f;
+	float GridSize = 50.0f;
 
 	UFUNCTION()
-		void SpawnTetroid();
+	void SpawnTetroid();
 
 	UFUNCTION()
-		void MoveTetroid();
+	void MoveTetroid();
 
 	UFUNCTION()
 	FVector GetSpawnPoint();
 
 	UFUNCTION()
-		void DoLineTrace();
+	void DoLineTrace();
 
 	UFUNCTION()
-		void HandleTetroid();
+	void HandleTetroid();
 
 	UFUNCTION()
 	FVector GetSnappedVector(FVector TVector);
 
 	UFUNCTION()
-		bool CanRotateOrMove(float checkdistance);
+	bool CheckMove();
 
-	
+	bool CheckRotate(float checkdistance);
+
 
 	FVector SpawnLocation;
 
@@ -95,9 +96,14 @@ private:
 	TArray<FVector> TraceEnd;
 
 	FRotator Rotation = FRotator::ZeroRotator;
-	
+
 
 	FCollisionQueryParams CollisionQuery;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> MyObjectTypes;
+
+	TSubclassOf<class AStaticMeshActor> ClassFilter;
+
 
 	TArray<FVector> StartLocations;
 
@@ -112,5 +118,6 @@ private:
 	TArray<FHitResult> HitResultLeft;
 
 	TArray<FHitResult> HitResultRight;
+
 
 };

@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BPStaticTetroidActor.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "TetroidActor.h"
 
 // Sets default values
@@ -25,12 +26,16 @@ ATetroidSpawner::ATetroidSpawner()
 	Hit.SetNum(i);
 
 
+	MyObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+
+	ClassFilter = AStaticMeshActor::StaticClass();
+
 	StartLocations.SetNum(i);
 	LeftDirections.SetNum(i);
 	RightDirections.SetNum(i);
 	EndLocationsLeft.SetNum(i);
 	EndLocationsRight.SetNum(i);
-	
+
 	HitResultLeft.SetNum(i);
 	HitResultRight.SetNum(i);
 }
@@ -74,7 +79,13 @@ void ATetroidSpawner::MoveTetroidToGrid(FVector MoveTo)
 void ATetroidSpawner::CheckAndMove(FVector MoveTo)
 {
 
-	if (tetroid && CanRotateOrMove(30.0f)) MoveTetroidToGrid(MoveTo);
+	MoveTetroidToGrid(MoveTo);
+
+	if (CheckMove())
+	{
+		FVector offset = (MoveTo * -1);
+		MoveTetroidToGrid(offset);
+	}
 }
 
 FVector ATetroidSpawner::GetSpawnPoint()
@@ -118,59 +129,80 @@ void ATetroidSpawner::DoLineTrace()
 	}
 }
 
-bool ATetroidSpawner::CanRotateOrMove(float checkdistance)
+bool ATetroidSpawner::CheckMove()
 {
 	int16 i = 0;
-	bool bHitLeft[4] = {};
-	bool bHitRight[4] = {};
+	bool bHit[4] = {};
 
 	TArray<UStaticMeshComponent*> ChildTetroids;
 	ChildTetroids.SetNum(i);
 
 	tetroid->GetComponents<UStaticMeshComponent>(ChildTetroids);
 
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActor(tetroid);
+	TArray<AActor*> OutActor;
 
 	for (UStaticMeshComponent* Cubes : ChildTetroids)
 	{
-		StartLocations[i] = Cubes->GetComponentLocation();
-		LeftDirections[i] = Cubes->GetForwardVector();
-		RightDirections[i] = -1 * Cubes->GetForwardVector();
-		EndLocationsLeft[i] = StartLocations[i] + (LeftDirections[i] * checkdistance);
-		EndLocationsRight[i] = StartLocations[i] + (RightDirections[i] * checkdistance);
+		FVector BoxCenter = Cubes->GetComponentLocation();
+		FVector BoxExtent(20.0f, 20.0f, 20.0f);
 
-		bHitLeft[i] = GetWorld()->LineTraceSingleByChannel(HitResultLeft[i], StartLocations[i], EndLocationsLeft[i], ECC_Visibility, CollisionParams);
-		bHitRight[i] = GetWorld()->LineTraceSingleByChannel(HitResultRight[i], StartLocations[i], EndLocationsRight[i], ECC_Visibility, CollisionParams);
+		bHit[i] = UKismetSystemLibrary::BoxOverlapActors(GetWorld(), BoxCenter, BoxExtent, MyObjectTypes,ClassFilter,{tetroid},OutActor);
 
-		DrawDebugLine(GetWorld(), StartLocations[i], EndLocationsLeft[i], FColor::Blue, false, 1.0f, 0, 5.0f);
-		DrawDebugLine(GetWorld(), StartLocations[i], EndLocationsRight[i], FColor::Blue, false, 1.0f, 0, 5.0f);
-
+		DrawDebugBox(GetWorld(), BoxCenter, BoxExtent, FColor::Blue, false, 2.0f);
 		++i;
 	}
+	bool result = (bHit[0] || bHit[1] || bHit[2] || bHit[3]);
 
-	bool resultleft = (bHitLeft[0] || bHitLeft[1] || bHitLeft[2] || bHitLeft[3]);
-	bool resultRight = (bHitRight[0] || bHitRight[1] || bHitRight[2] || bHitRight[3]);
-
-	bool result = (resultleft || resultRight);
-
-	return !result;
+	return result;
 	
+}
+bool ATetroidSpawner::CheckRotate(float checkdistance)
+{
+		int16 i = 0;
+		bool bHitLeft[4] = {};
+		bool bHitRight[4] = {};
+
+		TArray<UStaticMeshComponent*> ChildTetroids;
+		ChildTetroids.SetNum(i);
+
+		tetroid->GetComponents<UStaticMeshComponent>(ChildTetroids);
+
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(tetroid);
+
+		for (UStaticMeshComponent* Cubes : ChildTetroids)
+		{
+			StartLocations[i] = Cubes->GetComponentLocation();
+			LeftDirections[i] = Cubes->GetForwardVector();
+			RightDirections[i] = -1 * Cubes->GetForwardVector();
+			EndLocationsLeft[i] = StartLocations[i] + (LeftDirections[i] * checkdistance);
+			EndLocationsRight[i] = StartLocations[i] + (RightDirections[i] * checkdistance);
+
+			bHitLeft[i] = GetWorld()->LineTraceSingleByChannel(HitResultLeft[i], StartLocations[i], EndLocationsLeft[i], ECC_Visibility, CollisionParams);
+			bHitRight[i] = GetWorld()->LineTraceSingleByChannel(HitResultRight[i], StartLocations[i], EndLocationsRight[i], ECC_Visibility, CollisionParams);
+
+			DrawDebugLine(GetWorld(), StartLocations[i], EndLocationsLeft[i], FColor::Blue, false, 1.0f, 0, 5.0f);
+			DrawDebugLine(GetWorld(), StartLocations[i], EndLocationsRight[i], FColor::Blue, false, 1.0f, 0, 5.0f);
+
+			++i;
+		}
+
+		bool resultleft = (bHitLeft[0] || bHitLeft[1] || bHitLeft[2] || bHitLeft[3]);
+		bool resultRight = (bHitRight[0] || bHitRight[1] || bHitRight[2] || bHitRight[3]);
+
+		bool result = (resultleft || resultRight);
+
+		return !result;
 }
 void  ATetroidSpawner::RotateTetroid()
 {	
-
 	Rotation.Pitch += 90;
-	bool bCanRotate = CanRotateOrMove(50.0f);
-	UE_LOG(LogTemp, Display, TEXT(" bCanRotate->  %s"), bCanRotate ? TEXT("true") : TEXT("false"));
-	if (tetroid && bCanRotate)
+
+	if (CheckRotate(50.0f))
 	{
 		tetroid->AddActorWorldRotation(Rotation.Quaternion());
 	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("can't rotate"));
-	}
+	else Rotation.Pitch -= 90.0f;
 
 	if (Rotation.Pitch == 360) Rotation.Pitch = 0;
 
