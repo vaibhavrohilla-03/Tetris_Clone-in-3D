@@ -36,11 +36,6 @@ private:
 	void SelectRandomColor();
 
 	int32 ShapeNumber;
-
-	int16 MakeGoodRandom();
-	
-	int16 MyRandomNumber = 0;
-	int16 PreviousRandomNumber;
 	
 	UPROPERTY(EditAnywhere, Category = "CubeMat");
 		UMaterialInterface* CubeMaterial;

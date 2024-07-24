@@ -24,14 +24,14 @@ ATetroidActor::ATetroidActor()
 		Cubes[i]->SetupAttachment(RootComponent);
 	}
 
-	ShapeNumber = MakeGoodRandom();
+	
 }
 
 // Called when the game starts or when spawned
 void ATetroidActor::BeginPlay()
 {
 	Super::BeginPlay();
-
+	ShapeNumber = FMath::RandRange(0, 4);
 	MakeShape(ShapeNumber);
 	SelectRandomColor();
 	for (TObjectPtr<UStaticMeshComponent>& cubes : Cubes)
@@ -154,21 +154,6 @@ void ATetroidActor::SelectRandomColor()
 	DynCubeMaterial->SetVectorParameterValue(TEXT("GlowColor"), FColor::MakeRandomColor());
 
 	}
-}
- 
-int16 ATetroidActor::MakeGoodRandom()
-{ 
-	PreviousRandomNumber = MyRandomNumber;
-
-	MyRandomNumber = FMath::RandRange(0, 4);
-
-	if (PreviousRandomNumber == MyRandomNumber)
-	{
-		MyRandomNumber += FMath::RandRange(1, 2);
-	}
-	
-	return MyRandomNumber;
-	 
 }
 
 UMaterialInstanceDynamic* ATetroidActor::GetDynMaterial()

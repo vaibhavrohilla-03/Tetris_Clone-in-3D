@@ -18,6 +18,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void MoveTetroidToGrid(FVector MoveTo);
+
+	UFUNCTION()
+		void RotateTetroid();
+
+	UFUNCTION()
+		void CheckAndMove(FVector MoveTo);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -45,15 +54,18 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Gridsize")
 		float GridSize = 50.0f;
-	
+
 	UFUNCTION()
 		void SpawnTetroid();
 
 	UFUNCTION()
-		void MoveTetroid(class ATetroidActor* Tetroid);
+		void MoveTetroid();
 
 	UFUNCTION()
 	FVector GetSpawnPoint();
+
+	UFUNCTION()
+		void DoLineTrace();
 
 	UFUNCTION()
 		void HandleTetroid();
@@ -62,7 +74,9 @@ private:
 	FVector GetSnappedVector(FVector TVector);
 
 	UFUNCTION()
-	void MoveTetroidToGrid(ATetroidActor* tetroid, FVector MoveTo);
+		bool CanRotateOrMove(float checkdistance);
+
+	
 
 	FVector SpawnLocation;
 
@@ -80,7 +94,23 @@ private:
 
 	TArray<FVector> TraceEnd;
 
+	FRotator Rotation = FRotator::ZeroRotator;
 	
 
 	FCollisionQueryParams CollisionQuery;
+
+	TArray<FVector> StartLocations;
+
+	TArray<FVector> LeftDirections;
+
+	TArray<FVector> RightDirections;
+
+	TArray<FVector> EndLocationsLeft;
+
+	TArray<FVector> EndLocationsRight;
+
+	TArray<FHitResult> HitResultLeft;
+
+	TArray<FHitResult> HitResultRight;
+
 };
