@@ -27,6 +27,12 @@ public:
 	UFUNCTION()
 	void CheckAndMove(FVector MoveTo);
 
+	UFUNCTION()
+	void setrate(float Ratetoset);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CallBlueprintFunction();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -54,6 +60,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Gridsize")
 	float GridSize = 50.0f;
+
+	UPROPERTY(EditAnyWhere, Category = "BlueprintClass")
+	AActor* CheckLineBlueprint;
 
 	UFUNCTION()
 	void SpawnTetroid();
@@ -84,6 +93,9 @@ private:
 	class ATetroidActor* tetroid;
 
 	FTimerHandle SpawnTimerHandle;
+
+	float rate = 1.0f;
+	
 
 	bool isFalling = false;
 

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TetroidSpawner.h"
+#include "Misc/OutputDeviceNull.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BPStaticTetroidActor.h"
@@ -44,7 +45,7 @@ ATetroidSpawner::ATetroidSpawner()
 void ATetroidSpawner::BeginPlay()
 { 
 	Super::BeginPlay();
-	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::HandleTetroid, 0.5f, true);
+	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::HandleTetroid, rate, false);
 }
 
 // Called every frame
@@ -63,8 +64,23 @@ void ATetroidSpawner::Tick(float DeltaTime)
 	}
 
 }
+/*void ATetroidSpawner::CallBlueprintFunction()
+{
+	FOutputDeviceNull ar;
+	const FString cmd = FString::Printf(TEXT("CheckLines"));
 
+	if(CheckLineBlueprint) CheckLineBlueprint->CallFunctionByNameWithArguments(*cmd, ar, nullptr, true); 
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("blueprint function wasn't called"));
+	}
 
+}*/
+
+void ATetroidSpawner::setrate(float Ratetoset)
+{
+	rate = Ratetoset;
+}
 FVector ATetroidSpawner::GetSnappedVector(FVector TVector)
 {
 	return UKismetMathLibrary::Vector_SnappedToGrid(TVector, GridSize);
@@ -226,6 +242,7 @@ void ATetroidSpawner::HandleTetroid()
 
 		isFalling = true;
 		isOnGround = false;
+		GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::HandleTetroid, rate, false);
 		return;
 	}
 	else if (ensure(tetroid != nullptr))
@@ -251,10 +268,13 @@ void ATetroidSpawner::HandleTetroid()
 					ABPStaticTetroidActor* StaticTetroid =  GetWorld()->SpawnActor<ABPStaticTetroidActor>(MyStaticTetroidActor, Location, FRotator::ZeroRotator);
 					StaticTetroid->GetComponentByClass<UStaticMeshComponent>()->SetMaterial(0, tetroid->GetDynMaterial());
 				}
+				CallBlueprintFunction();
 				GetWorld()->DestroyActor(tetroid);
 
-			
+				GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::HandleTetroid, rate, false);
 		}
+
+		GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &ATetroidSpawner::HandleTetroid, rate, false);
 
 	}
 

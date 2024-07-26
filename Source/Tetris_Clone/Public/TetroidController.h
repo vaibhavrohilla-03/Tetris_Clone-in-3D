@@ -18,7 +18,7 @@ class TETRIS_CLONE_API ATetroidController : public APlayerController
 public:
 	ATetroidController();
 
-	UPROPERTY(EditAnyWhere,BlueprintReadWrite, Category = "Manager")
+	UPROPERTY(BlueprintReadWrite, Category = "Manager")
 	class ATetroidSpawner* TetroidSpawner;
 
 private:
@@ -37,6 +37,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 		UInputAction* RotateTetroidAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+		UInputAction* SpeedUpAction;
 
 
 	UPROPERTY(EditAnyWhere, Category = "OFFSETS")
@@ -58,7 +61,8 @@ private:
 
 	void RotateTetroid();
 
-	//void SpeedUpTetroid();
+	void SpeedUpTetroid();
+	void SpeedDownTetroid();
 
 
 

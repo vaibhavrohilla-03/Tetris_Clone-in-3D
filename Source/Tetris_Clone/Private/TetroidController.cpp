@@ -50,6 +50,12 @@ void ATetroidController::OnPossess(APawn* pawn)
      {
          EnhancedInputComponent->BindAction(RotateTetroidAction, ETriggerEvent::Triggered, this, &ATetroidController::RotateTetroid);
      }
+
+     if (SpeedUpAction)
+     {
+         EnhancedInputComponent->BindAction(SpeedUpAction, ETriggerEvent::Triggered, this, &ATetroidController::SpeedUpTetroid);
+         EnhancedInputComponent->BindAction(SpeedUpAction, ETriggerEvent::Completed, this, &ATetroidController::SpeedDownTetroid);
+     }
 }
 
 void ATetroidController::OnUnPossess()
@@ -88,4 +94,15 @@ void ATetroidController::MoveTetroidRight()
 void ATetroidController::RotateTetroid()
 {
     TetroidSpawner->RotateTetroid();
+}
+
+void ATetroidController::SpeedUpTetroid()
+{
+    TetroidSpawner->setrate(0.3);
+
+}
+
+void ATetroidController::SpeedDownTetroid()
+{
+    TetroidSpawner->setrate(1.0f);
 }
